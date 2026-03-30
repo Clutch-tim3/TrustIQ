@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserProfile {
+  id                  String    @id @default(cuid())
+  external_user_id    String?
+  email_hash          String?
+  phone_hash          String?
+  first_seen          DateTime  @default(now())
+  last_seen           DateTime  @default(now())
+  account_age_days    Int       @default(0)
+  trust_score         Float     @default(50)
+  risk_level          String    @default("medium")
+  total_assessments   Int       @default(0)
+  flagged_count       Int       @default(0)
+  known_ips           String[]
+  known_devices       String[]
+  linked_user_ids     String[]
+  developer_api_key_hash String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  assessments         Assessment[]
+  events              BehaviourEvent[]
+
+  @@index([email_hash])
+  @@index([external_user_id, developer_api_key_hash])
+  @@unique([external_user_id, developer_api_key_hash])
+}
+
+model DeviceFingerprint {
+  id                  String    @id @default(cuid())
+  fingerprint_hash    String    @unique
+  browser             String?
+  browser_version     String?
+  os                  String?
+  os_version          String?
+  device_type         String?
+  screen_resolution   String?
+  timezone            String?
+  language            String?
+  is_headless         Boolean   @default(false)
+  is_automation       Boolean   @default(false)
+  has_webdriver       Boolean   @default(false)
+  has_adblock         Boolean?
+  first_seen          DateTime  @default(now())
+  last_seen           DateTime  @default(now())
+  unique_users_count  Int       @default(1)
+  linked_user_ids     String[]
+  risk_score          Float     @default(0)
+  fraud_reports       Int       @default(0)
+  createdAt           DateTime  @default(now())
+
+  @@index([fingerprint_hash])
+}
+
+model IpReputation {
+  id                  String    @id @default(cuid())
+  ip                  String    @unique
+  ip_hash             String    @unique
+  is_vpn              Boolean   @default(false)
+  is_proxy            Boolean   @default(false)
+  is_tor              Boolean   @default(false)
+  is_datacenter       Boolean   @default(false)
+  is_residential      Boolean   @default(true)
+  country_code        String?
+  region              String?
+  city                String?
+  timezone            String?
+  asn                 String?
+  isp                 String?
+  abuse_score         Int       @default(0)
+  fraud_reports       Int       @default(0)
+  is_known_fraud_ip   Boolean   @default(false)
+  unique_users_24h    Int       @default(0)
+  unique_users_7d     Int       @default(0)
+  last_updated        DateTime  @default(now())
+  createdAt           DateTime  @default(now())
+
+  @@index([ip])
+}
+
+model EmailReputation {
+  id                  String    @id @default(cuid())
+  domain              String    @unique
+  is_free_provider    Boolean   @default(false)
+  is_disposable       Boolean   @default(false)
+  is_catch_all        Boolean   @default(false)
+  is_corporate        Boolean   @default(false)
+  has_mx              Boolean   @default(true)
+  has_spf             Boolean   @default(false)
+  has_dmarc           Boolean   @default(false)
+  domain_age_days     Int?
+  spam_score          Int       @default(0)
+  fraud_reports       Int       @default(0)
+  signups_24h         Int       @default(0)
+  signups_7d          Int       @default(0)
+  last_updated        DateTime  @default(now())
+  createdAt           DateTime  @default(now())
+
+  @@index([domain])
+}
+
+model Assessment {
+  id                  String    @id @default(cuid())
+  user_profile_id     String?
+  user_profile        UserProfile? @relation(fields: [user_profile_id], references: [id])
+  external_user_id    String?
+  developer_api_key_hash String
+  email_hash          String?
+  ip                  String?
+  device_fingerprint_hash String?
+  action_type         String?
+  trust_score         Float
+  risk_level          String
+  verdict             String
+  signals             Json
+  risk_factors        String[]
+  positive_factors    String[]
+  explanation         String    @db.Text
+  recommended_action  String    @db.Text
+  processing_ms       Int?
+  from_cache          Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+
+  @@index([developer_api_key_hash, createdAt])
+  @@index([external_user_id])
+  @@index([email_hash])
+}
+
+model BehaviourEvent {
+  id                  String    @id @default(cuid())
+  user_profile_id     String?
+  user_profile        UserProfile? @relation(fields: [user_profile_id], references: [id])
+  external_user_id    String?
+  developer_api_key_hash String
+  event_type          String
+  ip                  String?
+  device_fingerprint_hash String?
+  metadata            Json?
+  timestamp           DateTime  @default(now())
+
+  @@index([external_user_id, developer_api_key_hash])
+  @@index([timestamp])
+}
+
+model VelocityBucket {
+  id                  String    @id @default(cuid())
+  bucket_key          String    @unique
+  entity_type         String
+  entity_hash         String
+  window              String
+  count               Int       @default(0)
+  first_seen          DateTime  @default(now())
+  last_seen           DateTime  @default(now())
+  expires_at          DateTime
+
+  @@index([bucket_key])
+  @@index([expires_at])
+}
+
+model DisposableEmailDomain {
+  id                  String    @id @default(cuid())
+  domain              String    @unique
+  source              String
+  addedAt             DateTime  @default(now())
+}
+
+model ApiUsage {
+  id              String    @id @default(cuid())
+  api_key_hash    String
+  tier            String
+  endpoint        String
+  request_weight  Int       @default(1)
+  response_status Int
+  duration_ms     Int
+  from_cache      Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+
+  @@index([api_key_hash, createdAt])
+}

@@ -1,0 +1,184 @@
+### Assess a user
+POST http://localhost:3000/v1/assess
+Content-Type: application/json
+x-rapidapi-key: demo-key
+
+{
+  "action": "signup",
+  "user_id": "usr_12345",
+  "email": "john.smith@acme.com",
+  "phone": "+27825551234",
+  "ip": "41.13.67.45",
+  "device_fingerprint": {
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "screen_resolution": "2560x1440",
+    "timezone": "Africa/Johannesburg",
+    "language": "en-ZA",
+    "platform": "MacIntel",
+    "cookie_enabled": true,
+    "installed_fonts_count": 47,
+    "do_not_track": false,
+    "hardware_concurrency": 8,
+    "device_memory_gb": 8,
+    "connection_type": "wifi",
+    "has_webdriver": false,
+    "has_phantom": false,
+    "has_nightmare": false,
+    "plugins_count": 3
+  },
+  "behaviour": {
+    "time_to_complete_seconds": 47,
+    "mouse_movements": true,
+    "keyboard_events": true,
+    "copy_paste_detected": false,
+    "tab_focus_changes": 2,
+    "scroll_events": 8
+  },
+  "context": {
+    "app_name": "My SaaS App",
+    "environment": "production",
+    "referrer": "https://google.com",
+    "utm_source": "google",
+    "locale": "en-ZA"
+  }
+}
+
+### Assess email
+POST http://localhost:3000/v1/assess/email
+Content-Type: application/json
+x-rapidapi-key: demo-key
+
+{
+  "email": "user@tempmail.io",
+  "context": "signup"
+}
+
+### Assess IP
+POST http://localhost:3000/v1/assess/ip
+Content-Type: application/json
+x-rapidapi-key: demo-key
+
+{
+  "ip": "41.13.67.45",
+  "context": "login"
+}
+
+### Assess device
+POST http://localhost:3000/v1/assess/device
+Content-Type: application/json
+x-rapidapi-key: demo-key
+
+{
+  "device_fingerprint": {
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "screen_resolution": "2560x1440",
+    "timezone": "Africa/Johannesburg",
+    "language": "en-ZA",
+    "platform": "MacIntel",
+    "cookie_enabled": true,
+    "installed_fonts_count": 47,
+    "do_not_track": false,
+    "hardware_concurrency": 8,
+    "device_memory_gb": 8,
+    "connection_type": "wifi",
+    "has_webdriver": false,
+    "has_phantom": false,
+    "has_nightmare": false,
+    "plugins_count": 3
+  },
+  "user_id": "usr_12345"
+}
+
+### Assess phone
+POST http://localhost:3000/v1/assess/phone
+Content-Type: application/json
+x-rapidapi-key: demo-key
+
+{
+  "phone": "+27825551234",
+  "context": "2fa_setup"
+}
+
+### Track event
+POST http://localhost:3000/v1/events/track
+Content-Type: application/json
+x-rapidapi-key: demo-key
+
+{
+  "user_id": "usr_12345",
+  "event": "login",
+  "ip": "41.13.67.45",
+  "metadata": {
+    "device_type": "desktop"
+  }
+}
+
+### Report fraud
+POST http://localhost:3000/v1/events/report
+Content-Type: application/json
+x-rapidapi-key: demo-key
+
+{
+  "user_id": "usr_12345",
+  "report_type": "chargeback",
+  "confirmed": true,
+  "details": "User performed 3 chargebacks within 7 days",
+  "email": "user@domain.com",
+  "ip": "41.13.67.45"
+}
+
+### Get user profile
+GET http://localhost:3000/v1/users/usr_12345/profile
+x-rapidapi-key: demo-key
+
+### Update trust score
+PATCH http://localhost:3000/v1/users/usr_12345/trust-score
+Content-Type: application/json
+x-rapidapi-key: demo-key
+
+{
+  "adjustment": "increase",
+  "value": 20,
+  "reason": "manual_review_cleared",
+  "notes": "Support team verified identity via video call"
+}
+
+### Get linked accounts
+GET http://localhost:3000/v1/users/usr_12345/linked-accounts
+x-rapidapi-key: demo-key
+
+### Check velocity
+GET http://localhost:3000/v1/velocity/check?entity_type=ip&entity_value=41.13.67.45&windows=1h,24h
+x-rapidapi-key: demo-key
+
+### Get anomalies
+GET http://localhost:3000/v1/anomalies?severity=all&type=all&hours=24
+x-rapidapi-key: demo-key
+
+### Get stats
+GET http://localhost:3000/v1/stats?period=30d
+x-rapidapi-key: demo-key
+
+### Get configuration
+GET http://localhost:3000/v1/config/thresholds
+x-rapidapi-key: demo-key
+
+### Update configuration
+POST http://localhost:3000/v1/config/thresholds
+Content-Type: application/json
+x-rapidapi-key: demo-key
+
+{
+  "thresholds": {
+    "allow": 60,
+    "challenge": 35,
+    "block": 0
+  },
+  "action_overrides": {
+    "payment": { "allow": 75, "challenge": 50, "block": 0 },
+    "signup": { "allow": 55, "challenge": 30, "block": 0 }
+  }
+}
+
+### Health check
+GET http://localhost:3000/v1/health

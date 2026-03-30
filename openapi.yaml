@@ -1,0 +1,1866 @@
+openapi: 3.0.0
+info:
+  title: TrustIQ API
+  description: "Complete user trust layer for your app. Assess any user in one API call — email risk, IP intelligence, device fingerprinting, behaviour signals, velocity checks, bot detection, and multi-account detection. Block fraud before it hits your platform."
+  version: 1.0.0
+servers:
+  - url: https://api.trustiq.io/v1
+    description: Production server
+  - url: http://localhost:3000/v1
+    description: Local development server
+paths:
+  /assess:
+    post:
+      tags:
+        - Trust Assessment
+      summary: Unified trust assessment
+      description: The flagship endpoint. Accept any combination of signals about a user action and return a complete trust assessment in one call. Designed to be called at signup, login, payment initiation, first message, first listing, first withdrawal.
+      operationId: assessUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /assess/email:
+    post:
+      tags:
+        - Trust Assessment
+      summary: Standalone email risk assessment
+      description: Fast, focused email trust check. Called on signup forms before full assessment — gives instant feedback on email quality.
+      operationId: assessEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailAssessRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailAssessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /assess/ip:
+    post:
+      tags:
+        - Trust Assessment
+      summary: Standalone IP risk assessment
+      description: Fast, focused IP trust check. Returns geolocation, VPN/proxy detection, reputation score, and velocity information.
+      operationId: assessIp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IpAssessRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IpAssessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /assess/device:
+    post:
+      tags:
+        - Trust Assessment
+      summary: Standalone device fingerprint risk assessment
+      description: Analyzes device fingerprint for automation signals, device history, and trust score.
+      operationId: assessDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceAssessRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceAssessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /assess/phone:
+    post:
+      tags:
+        - Trust Assessment
+      summary: Phone number trust assessment
+      description: Validates phone number format, line type, carrier, and trust signals.
+      operationId: assessPhone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneAssessRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneAssessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /assess/identity:
+    post:
+      tags:
+        - Trust Assessment
+      summary: Identity consistency check
+      description: Checks if a set of identity signals are internally consistent and match expected patterns for legitimate users.
+      operationId: assessIdentity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdentityAssessRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentityAssessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /assess/batch:
+    post:
+      tags:
+        - Trust Assessment
+      summary: Batch assess up to 50 users simultaneously
+      description: Process multiple user assessments in a single batch. Returns job_id if async, or full results if synchronous.
+      operationId: assessBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchAssessRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchAssessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /events/track:
+    post:
+      tags:
+        - Event Tracking
+      summary: Track user behaviour events
+      description: Fire-and-forget endpoint to track user behaviour events. Improves trust assessment accuracy over time.
+      operationId: trackEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackEventRequest'
+      responses:
+        '202':
+          $ref: '#/components/responses/Accepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /events/report:
+    post:
+      tags:
+        - Event Tracking
+      summary: Report a confirmed fraudulent user
+      description: Report a confirmed fraudulent or abusive user to improve signal quality for everyone.
+      operationId: reportEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportEventRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportEventResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{user_id}/profile:
+    get:
+      tags:
+        - User Trust Profiles
+      summary: Get user trust profile
+      description: Returns the complete trust profile built from all assessments and events tracked for this user.
+      operationId: getUserProfile
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User's unique identifier
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{user_id}/trust-score:
+    patch:
+      tags:
+        - User Trust Profiles
+      summary: Adjust user trust score
+      description: Manually adjust a user's trust score based on manual review or other external factors.
+      operationId: adjustTrustScore
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User's unique identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustTrustScoreRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdjustTrustScoreResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{user_id}/linked-accounts:
+    get:
+      tags:
+        - User Trust Profiles
+      summary: Get linked accounts
+      description: Returns all user_ids that share device fingerprints, IP addresses, or email domain patterns with this user.
+      operationId: getLinkedAccounts
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User's unique identifier
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkedAccountsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /velocity/check:
+    get:
+      tags:
+        - Velocity & Anomaly Intelligence
+      summary: Check velocity for any entity
+      description: Real-time velocity check against any entity — IP, email domain, or device.
+      operationId: checkVelocity
+      parameters:
+        - name: entity_type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [ip, email_domain, device]
+          description: Type of entity to check
+        - name: entity_value
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Value of the entity to check
+        - name: windows
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "1h,24h"
+          description: Comma-separated list of time windows
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VelocityCheckResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /anomalies:
+    get:
+      tags:
+        - Velocity & Anomaly Intelligence
+      summary: Detect anomalies
+      description: Returns current anomalies detected across the developer's entire user base.
+      operationId: getAnomalies
+      parameters:
+        - name: severity
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, critical, high, medium]
+            default: "all"
+          description: Severity level filter
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, velocity, geographic, device, bot_wave, credential_stuffing]
+            default: "all"
+          description: Anomaly type filter
+        - name: hours
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 24
+          description: Look-back window in hours
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnomaliesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /config/thresholds:
+    get:
+      tags:
+        - Developer Tools & Configuration
+      summary: Get trust score thresholds
+      description: Returns the developer's current threshold configuration.
+      operationId: getThresholds
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThresholdsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Developer Tools & Configuration
+      summary: Update trust score thresholds
+      description: Allow developers to tune the model to their risk tolerance.
+      operationId: updateThresholds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateThresholdsRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThresholdsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /stats:
+    get:
+      tags:
+        - Developer Tools & Configuration
+      summary: Usage statistics and trust metrics
+      description: Returns usage statistics and trust metrics for your app.
+      operationId: getStats
+      parameters:
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [7d, 30d, 90d]
+            default: "30d"
+          description: Time period for statistics
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /health:
+    get:
+      tags:
+        - Developer Tools & Configuration
+      summary: Health check
+      description: Returns server health status and uptime.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    # Request schemas
+    AssessRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          description: Type of user action
+          enum: [signup, login, payment, content_post, withdrawal, account_update, api_access, message_send, listing_create]
+        user_id:
+          type: string
+          description: Your internal user ID
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          description: Phone number in E164 format
+        ip:
+          type: string
+          format: ipv4
+        device_fingerprint:
+          $ref: '#/components/schemas/DeviceFingerprint'
+        behaviour:
+          $ref: '#/components/schemas/BehaviourData'
+        context:
+          $ref: '#/components/schemas/ContextData'
+
+    EmailAssessRequest:
+      type: object
+      required: [email, context]
+      properties:
+        email:
+          type: string
+          format: email
+        context:
+          type: string
+          enum: [signup, login, contact_form, general]
+
+    IpAssessRequest:
+      type: object
+      required: [ip, context]
+      properties:
+        ip:
+          type: string
+          format: ipv4
+        context:
+          type: string
+          enum: [signup, login, payment, general]
+
+    DeviceAssessRequest:
+      type: object
+      required: [device_fingerprint]
+      properties:
+        device_fingerprint:
+          $ref: '#/components/schemas/DeviceFingerprint'
+        user_id:
+          type: string
+        ip:
+          type: string
+          format: ipv4
+
+    PhoneAssessRequest:
+      type: object
+      required: [phone, context]
+      properties:
+        phone:
+          type: string
+          description: Phone number in E164 format
+        context:
+          type: string
+          enum: [signup, 2fa_setup, payment, general]
+
+    IdentityAssessRequest:
+      type: object
+      required: [name, email, phone, country, ip]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          description: Phone number in E164 format
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2 country code
+        ip:
+          type: string
+          format: ipv4
+        date_of_birth:
+          type: string
+          format: date
+        company:
+          type: string
+
+    BatchAssessRequest:
+      type: object
+      required: [assessments]
+      properties:
+        assessments:
+          type: array
+          items:
+            type: object
+            properties:
+              user_id:
+                type: string
+              email:
+                type: string
+                format: email
+              ip:
+                type: string
+                format: ipv4
+              action:
+                type: string
+                enum: [signup, login, payment, content_post, withdrawal, account_update, api_access, message_send, listing_create]
+            required: [action]
+          maxItems: 50
+        webhook_url:
+          type: string
+          format: url
+
+    TrackEventRequest:
+      type: object
+      required: [user_id, event]
+      properties:
+        user_id:
+          type: string
+        event:
+          type: string
+          enum: [login, logout, password_reset, payment_attempt, payment_success, payment_failed, content_post, message_sent, profile_update, email_change, phone_change, listing_create, review_posted, file_upload, search, view, custom]
+        ip:
+          type: string
+          format: ipv4
+        device_fingerprint_hash:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+
+    ReportEventRequest:
+      type: object
+      required: [user_id, report_type, confirmed, details]
+      properties:
+        user_id:
+          type: string
+        report_type:
+          type: string
+          enum: [fraud, fake_account, chargeback, spam, tos_violation, bot, identity_theft]
+        confirmed:
+          type: boolean
+        details:
+          type: string
+        email:
+          type: string
+          format: email
+        ip:
+          type: string
+          format: ipv4
+        device_fingerprint_hash:
+          type: string
+
+    AdjustTrustScoreRequest:
+      type: object
+      required: [adjustment, value, reason]
+      properties:
+        adjustment:
+          type: string
+          enum: [increase, decrease, set]
+        value:
+          type: number
+        reason:
+          type: string
+          enum: [manual_review_cleared, fraud_confirmed, identity_verified, chargeback_received]
+        notes:
+          type: string
+
+    UpdateThresholdsRequest:
+      type: object
+      required: [thresholds]
+      properties:
+        thresholds:
+          $ref: '#/components/schemas/ThresholdConfig'
+        action_overrides:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ThresholdConfig'
+
+    # Response schemas
+    AssessResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/AssessResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    EmailAssessResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/EmailAssessResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    IpAssessResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/IpAssessResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    DeviceAssessResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/DeviceAssessResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    PhoneAssessResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/PhoneAssessResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    IdentityAssessResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/IdentityAssessResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    BatchAssessResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/BatchAssessResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    ReportEventResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/ReportEventResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    UserProfileResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/UserProfileResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    AdjustTrustScoreResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/AdjustTrustScoreResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    LinkedAccountsResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/LinkedAccountsResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    VelocityCheckResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/VelocityCheckResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    AnomaliesResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/AnomaliesResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    ThresholdsResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/ThresholdsResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    StatsResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/StatsResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    HealthResponse:
+      type: object
+      required: [data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/HealthResponseData'
+        error:
+          $ref: '#/components/schemas/ApiError'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    # Data schemas
+    AssessResponseData:
+      type: object
+      properties:
+        assessment_id:
+          type: string
+        action:
+          type: string
+        user_id:
+          type: string
+        verdict:
+          type: string
+          enum: [allow, challenge, block, manual_review]
+        trust_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        risk_level:
+          type: string
+          enum: [critical, high, medium, low]
+        confidence:
+          type: string
+          enum: [high, medium, low]
+        signals:
+          $ref: '#/components/schemas/AssessSignals'
+        risk_factors:
+          type: array
+          items:
+            type: string
+        positive_factors:
+          type: array
+          items:
+            type: string
+        recommended_action:
+          type: string
+        challenge_options:
+          $ref: '#/components/schemas/ChallengeOptions'
+        geo_context:
+          $ref: '#/components/schemas/GeoContext'
+        linked_accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedAccount'
+        assessed_at:
+          type: string
+          format: date-time
+
+    EmailAssessResponseData:
+      type: object
+      properties:
+        email:
+          type: string
+        is_valid_format:
+          type: boolean
+        risk_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        risk_label:
+          type: string
+        verdict:
+          type: string
+          enum: [allow, challenge, block]
+        signals:
+          $ref: '#/components/schemas/EmailSignals'
+        recommendation:
+          type: string
+        safe_alternative_message:
+          type: string
+
+    IpAssessResponseData:
+      type: object
+      properties:
+        ip:
+          type: string
+        risk_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        risk_label:
+          type: string
+        verdict:
+          type: string
+          enum: [allow, challenge, block]
+        location:
+          $ref: '#/components/schemas/IpLocation'
+        network:
+          $ref: '#/components/schemas/IpNetwork'
+        signals:
+          $ref: '#/components/schemas/IpSignals'
+        threat_types:
+          type: array
+          items:
+            type: string
+
+    DeviceAssessResponseData:
+      type: object
+      properties:
+        device_id:
+          type: string
+        first_seen:
+          type: string
+          format: date-time
+        last_seen:
+          type: string
+          format: date-time
+        device_age_days:
+          type: integer
+        risk_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        risk_label:
+          type: string
+        verdict:
+          type: string
+          enum: [allow, challenge, block]
+        signals:
+          $ref: '#/components/schemas/DeviceSignals'
+        account_history:
+          $ref: '#/components/schemas/DeviceAccountHistory'
+        consistency:
+          $ref: '#/components/schemas/DeviceConsistency'
+
+    PhoneAssessResponseData:
+      type: object
+      properties:
+        phone:
+          type: string
+        is_valid:
+          type: boolean
+        formatted_e164:
+          type: string
+        risk_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        risk_label:
+          type: string
+        verdict:
+          type: string
+          enum: [allow, challenge, block]
+        signals:
+          $ref: '#/components/schemas/PhoneSignals'
+        risk_factors:
+          type: array
+          items:
+            type: string
+        recommendation:
+          type: string
+
+    IdentityAssessResponseData:
+      type: object
+      properties:
+        consistency_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        is_consistent:
+          type: boolean
+        verdict:
+          type: string
+          enum: [allow, challenge, block]
+        checks:
+          $ref: '#/components/schemas/IdentityChecks'
+        inconsistencies:
+          type: array
+          items:
+            type: string
+        risk_factors:
+          type: array
+          items:
+            type: string
+        recommendation:
+          type: string
+
+    BatchAssessResponseData:
+      type: object
+      properties:
+        job_id:
+          type: string
+        status:
+          type: string
+        assessments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssessResponseData'
+
+    ReportEventResponseData:
+      type: object
+      properties:
+        reported:
+          type: boolean
+        signal_updated:
+          type: boolean
+
+    UserProfileResponseData:
+      type: object
+      properties:
+        user_id:
+          type: string
+        trust_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        risk_level:
+          type: string
+          enum: [critical, high, medium, low]
+        account_age_days:
+          type: integer
+        first_seen:
+          type: string
+          format: date-time
+        last_seen:
+          type: string
+          format: date-time
+        total_assessments:
+          type: integer
+        flagged_count:
+          type: integer
+        known_devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnownDevice'
+        known_locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnownLocation'
+        behaviour_patterns:
+          $ref: '#/components/schemas/BehaviourPatterns'
+        linked_accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedAccount'
+        risk_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/RiskHistory'
+
+    AdjustTrustScoreResponseData:
+      type: object
+      properties:
+        user_id:
+          type: string
+        new_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        old_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        adjustment:
+          type: string
+        reason:
+          type: string
+        notes:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+
+    LinkedAccountsResponseData:
+      type: object
+      properties:
+        user_id:
+          type: string
+        linked_accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedAccount'
+        network_size:
+          type: integer
+        network_risk_level:
+          type: string
+
+    VelocityCheckResponseData:
+      type: object
+      properties:
+        entity_type:
+          type: string
+        entity:
+          type: string
+        velocity:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/VelocityWindow'
+        is_anomalous:
+          type: boolean
+        anomaly_score:
+          type: number
+        recommendation:
+          type: string
+
+    AnomaliesResponseData:
+      type: object
+      properties:
+        period:
+          type: string
+        total_anomalies:
+          type: integer
+        anomalies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Anomaly'
+        summary:
+          $ref: '#/components/schemas/AnomalySummary'
+
+    ThresholdsResponseData:
+      type: object
+      properties:
+        thresholds:
+          $ref: '#/components/schemas/ThresholdConfig'
+        action_overrides:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ThresholdConfig'
+
+    StatsResponseData:
+      type: object
+      properties:
+        period:
+          type: string
+        assessments:
+          $ref: '#/components/schemas/AssessmentStats'
+        threats_blocked:
+          $ref: '#/components/schemas/ThreatStats'
+        trust_distribution:
+          $ref: '#/components/schemas/TrustDistribution'
+        top_threat_countries:
+          type: array
+          items:
+            type: string
+        bot_wave_incidents:
+          type: integer
+
+    HealthResponseData:
+      type: object
+      properties:
+        status:
+          type: string
+        uptime:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        services:
+          $ref: '#/components/schemas/ServiceHealth'
+
+    # Sub-schemas
+    DeviceFingerprint:
+      type: object
+      required: [user_agent, screen_resolution, timezone, language, platform, cookie_enabled, installed_fonts_count, do_not_track, hardware_concurrency, device_memory_gb, connection_type, has_webdriver, has_phantom, has_nightmare, plugins_count]
+      properties:
+        user_agent:
+          type: string
+        screen_resolution:
+          type: string
+        timezone:
+          type: string
+        language:
+          type: string
+        platform:
+          type: string
+        cookie_enabled:
+          type: boolean
+        canvas_hash:
+          type: string
+        webgl_hash:
+          type: string
+        audio_hash:
+          type: string
+        installed_fonts_count:
+          type: integer
+        do_not_track:
+          type: boolean
+        hardware_concurrency:
+          type: integer
+        device_memory_gb:
+          type: number
+        connection_type:
+          type: string
+        has_webdriver:
+          type: boolean
+        has_phantom:
+          type: boolean
+        has_nightmare:
+          type: boolean
+        plugins_count:
+          type: integer
+
+    BehaviourData:
+      type: object
+      properties:
+        time_to_complete_seconds:
+          type: number
+        mouse_movements:
+          type: boolean
+        keyboard_events:
+          type: boolean
+        copy_paste_detected:
+          type: boolean
+        tab_focus_changes:
+          type: integer
+        scroll_events:
+          type: integer
+
+    ContextData:
+      type: object
+      properties:
+        app_name:
+          type: string
+        environment:
+          type: string
+        referrer:
+          type: string
+        utm_source:
+          type: string
+        locale:
+          type: string
+        custom_signals:
+          type: object
+          additionalProperties: true
+
+    AssessSignals:
+      type: object
+      properties:
+        ip:
+          $ref: '#/components/schemas/IpSignals'
+        email:
+          $ref: '#/components/schemas/EmailSignals'
+        device:
+          $ref: '#/components/schemas/DeviceSignals'
+        behaviour:
+          $ref: '#/components/schemas/BehaviourSignals'
+        user_history:
+          $ref: '#/components/schemas/UserHistorySignals'
+
+    IpSignals:
+      type: object
+      properties:
+        score_contribution:
+          type: number
+        is_vpn:
+          type: boolean
+        is_proxy:
+          type: boolean
+        is_tor:
+          type: boolean
+        is_datacenter:
+          type: boolean
+        country:
+          type: string
+        abuse_score:
+          type: integer
+        velocity_1h:
+          type: integer
+        velocity_24h:
+          type: integer
+        velocity_7d:
+          type: integer
+
+    EmailSignals:
+      type: object
+      properties:
+        score_contribution:
+          type: number
+        is_disposable:
+          type: boolean
+        is_free_provider:
+          type: boolean
+        has_mx:
+          type: boolean
+        has_dmarc:
+          type: boolean
+        domain_age_days:
+          type: integer
+        velocity_24h:
+          type: integer
+        format_anomalies:
+          type: array
+          items:
+            type: string
+
+    DeviceSignals:
+      type: object
+      properties:
+        score_contribution:
+          type: number
+        fingerprint_hash:
+          type: string
+        is_headless:
+          type: boolean
+        is_automation:
+          type: boolean
+        device_age_days:
+          type: integer
+        unique_users_on_device:
+          type: integer
+        previously_seen:
+          type: boolean
+
+    BehaviourSignals:
+      type: object
+      properties:
+        score_contribution:
+          type: number
+        time_to_complete_seconds:
+          type: number
+        human_timing:
+          type: boolean
+        mouse_movements_detected:
+          type: boolean
+        keyboard_events_detected:
+          type: boolean
+
+    UserHistorySignals:
+      type: object
+      properties:
+        score_contribution:
+          type: number
+        account_age_days:
+          type: integer
+        prior_assessments:
+          type: integer
+        prior_flags:
+          type: integer
+
+    GeoContext:
+      type: object
+      properties:
+        ip_country:
+          type: string
+        email_domain_country:
+          type: string
+        country_match:
+          type: boolean
+        timezone:
+          type: string
+
+    ChallengeOptions:
+      type: object
+      properties:
+        recommended:
+          type: string
+          enum: [email_otp, sms_otp, captcha]
+        alternatives:
+          type: array
+          items:
+            type: string
+            enum: [email_otp, sms_otp, captcha]
+
+    LinkedAccount:
+      type: object
+      properties:
+        user_id:
+          type: string
+        link_type:
+          type: string
+          enum: [shared_device, shared_ip, shared_email_pattern]
+        device_id:
+          type: string
+        ip:
+          type: string
+        confidence:
+          type: string
+          enum: [high, medium, low]
+        first_link_detected:
+          type: string
+        risk_implication:
+          type: string
+
+    ThresholdConfig:
+      type: object
+      properties:
+        allow:
+          type: integer
+        challenge:
+          type: integer
+        block:
+          type: integer
+
+    ApiError:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        docs_url:
+          type: string
+
+    Meta:
+      type: object
+      properties:
+        request_id:
+          type: string
+        version:
+          type: string
+        processing_ms:
+          type: integer
+        from_cache:
+          type: boolean
+
+    # Additional data schemas
+    IpLocation:
+      type: object
+      properties:
+        country_code:
+          type: string
+        country_name:
+          type: string
+        region:
+          type: string
+        city:
+          type: string
+        timezone:
+          type: string
+        is_eu:
+          type: boolean
+
+    IpNetwork:
+      type: object
+      properties:
+        isp:
+          type: string
+        asn:
+          type: string
+        connection_type:
+          type: string
+
+    DeviceAccountHistory:
+      type: object
+      properties:
+        unique_users_total:
+          type: integer
+        unique_users_24h:
+          type: integer
+        unique_users_7d:
+          type: integer
+        linked_flagged_accounts:
+          type: integer
+
+    DeviceConsistency:
+      type: object
+      properties:
+        fingerprint_stable:
+          type: boolean
+        timezone_consistent:
+          type: boolean
+        language_consistent:
+          type: boolean
+
+    PhoneSignals:
+      type: object
+      properties:
+        line_type:
+          type: string
+          enum: [mobile, landline, voip, toll_free, unknown]
+        carrier:
+          type: string
+        country_code:
+          type: string
+        is_voip:
+          type: boolean
+        is_prepaid:
+          type: boolean
+        is_ported:
+          type: boolean
+        is_virtual_number:
+          type: boolean
+        is_known_fraud_number:
+          type: boolean
+        velocity_24h:
+          type: integer
+
+    IdentityChecks:
+      type: object
+      properties:
+        name_email_consistent:
+          type: boolean
+        country_signals_consistent:
+          type: boolean
+        name_is_plausible:
+          type: boolean
+        company_email_consistent:
+          type: boolean
+        age_plausible:
+          type: boolean
+
+    VelocityWindow:
+      type: object
+      properties:
+        count:
+          type: integer
+        threshold:
+          type: integer
+        is_anomalous:
+          type: boolean
+
+    Anomaly:
+      type: object
+      properties:
+        anomaly_id:
+          type: string
+        type:
+          type: string
+        severity:
+          type: string
+        detected_at:
+          type: string
+          format: date-time
+        title:
+          type: string
+        description:
+          type: string
+        affected_count:
+          type: integer
+        signals:
+          type: object
+          additionalProperties: true
+        auto_blocked:
+          type: boolean
+        recommended_action:
+          type: string
+
+    AnomalySummary:
+      type: object
+      properties:
+        blocked_automatically:
+          type: integer
+        flagged_for_review:
+          type: integer
+        clean_signups:
+          type: integer
+
+    KnownDevice:
+      type: object
+      properties:
+        device_id:
+          type: string
+        device_type:
+          type: string
+        browser:
+          type: string
+        first_seen:
+          type: string
+          format: date
+        last_seen:
+          type: string
+          format: date
+        is_primary:
+          type: boolean
+
+    KnownLocation:
+      type: object
+      properties:
+        country:
+          type: string
+        city:
+          type: string
+        frequency_pct:
+          type: number
+
+    BehaviourPatterns:
+      type: object
+      properties:
+        typical_login_hours:
+          type: string
+        avg_sessions_per_week:
+          type: number
+        avg_session_duration_mins:
+          type: number
+
+    RiskHistory:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        event:
+          type: string
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+
+    AssessmentStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        allow:
+          type: integer
+        challenge:
+          type: integer
+        block:
+          type: integer
+        allow_pct:
+          type: number
+        challenge_pct:
+          type: number
+        block_pct:
+          type: number
+
+    ThreatStats:
+      type: object
+      properties:
+        bot_signups:
+          type: integer
+        disposable_emails:
+          type: integer
+        vpn_proxy_logins:
+          type: integer
+        fraud_ip_attempts:
+          type: integer
+        suspicious_devices:
+          type: integer
+
+    TrustDistribution:
+      type: object
+      properties:
+        trusted_80_plus:
+          type: number
+        low_risk_61_80:
+          type: number
+        medium_risk_40_60:
+          type: number
+        high_risk_below_40:
+          type: number
+
+    ServiceHealth:
+      type: object
+      properties:
+        database:
+          $ref: '#/components/schemas/HealthStatus'
+        redis:
+          $ref: '#/components/schemas/HealthStatus'
+        api:
+          $ref: '#/components/schemas/HealthStatus'
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        response_time:
+          type: integer
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Accepted:
+      description: Accepted
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              data:
+                type: object
+              error:
+                $ref: '#/components/schemas/ApiError'
+              meta:
+                $ref: '#/components/schemas/Meta'
+
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-RapidAPI-Key

@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: trustiq-api
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: trustiq-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: trustiq-redis
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ABUSEIPDB_API_KEY
+        sync: false
+      - key: VPNAPI_KEY
+        sync: false
+    healthCheckPath: /v1/health
+    healthCheckIntervalSeconds: 30
+    healthCheckTimeoutSeconds: 10
+    autoDeploy: true
+
+databases:
+  - name: trustiq-db
+    engine: postgres
+    version: 16
+
+redis:
+  - name: trustiq-redis
+    version: 7
